@@ -4,7 +4,8 @@
 
 - implémenter un algo avec **sklearn** pour predire les maladies selon les symptomes
 - Implémenter cette algo sur une `api` pour la tester (**Flask** ou **FastAPI**)
-- Implementer cette `api` dans le `cloud`
+- Contenairiser notre api avec `Docker
+- Implementer cette `api containeriser` dans le `cloud`
 
 # Partie 1 Algo
 
