@@ -1,5 +1,4 @@
-from ml import FeatureExtractor, FeatureRecipe
-from __init__ import DataHandler
+from ml import FeatureExtractor, FeatureRecipe, DataHandler
 
 
 def DataManager(d: DataHandler = None, fr: FeatureRecipe = None, fe: FeatureExtractor = None):
