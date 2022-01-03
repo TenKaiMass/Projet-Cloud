@@ -1,10 +1,16 @@
+
+from datetime import datetime
+from os import mkdir
+
 import numpy as np
 import pandas as pd
-
+from scipy.sparse import data
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
+from sklearn.metrics import accuracy_score
+from joblib import dump, load
 
 
 class DataHandler:
@@ -16,7 +22,7 @@ class DataHandler:
     def __init__(self, csvfile1, csvfile2):
         self.csvfile1 = self.getCsvfile(csvfile1)
         self.csvfile2 = self.getCsvfile(csvfile2)
-        self.gouped_data = pd.concat([self.csvfile1, self.csvfile2])
+        self.grouped_data = pd.concat([self.csvfile1, self.csvfile2])
 
     def getCsvfile(self, filename: str):
         return pd.read_csv(filename)
@@ -33,7 +39,7 @@ class FeatureRecipe:
         self.continuous = continus
         self.categorical = type_data
         self.discrete = not continus
-        #self.datetime = None
+        # self.datetime = None
 
 
 class FeatureExtractor:
@@ -66,11 +72,10 @@ class ModelBuilder:
     """
 
     def __init__(self, model_path: str, save: bool, data: FeatureExtractor):
-        self.model = make_pipeline(
-            StandardScaler(), SGDClassifier(max_iter=1000, tol=1e-3))
+        self.save = save
+        self.model_path = model_path
+        self.model = self.loadModel()
         self.data = data
-
-        pass
 
     def __repr__(self):
         pass
@@ -78,26 +83,45 @@ class ModelBuilder:
     def train(self, X, Y):
         self.model.fit(X, Y)
 
-        pass
-
-    def predict_test(self, X) -> np.ndarray:
+    def predictTest(self, X):  # -> np.ndarray:
         self.model.predict(X)
 
+    def predictFromDump(self, X) -> np.ndarray:
         pass
 
-    def predict_from_dump(self, X) -> np.ndarray:
-        pass
+    def saveModel(self, model_name: str):
+        date = datetime.now()
+        path = '../Model_Save/'
+        extension = ".joblib"
+        d = "_{}_{}_{}".format(date.day, date.month, date.year)
+        path = "{}{}_{}{}".format(path, model_name, d, extension)
+        try:
+            dump(self.model, path)
+        except FileNotFoundError:
+            mkdir("../Model_Save")
+            dump(self.model, path)
+            print(f"le model {model_name} à bien été sauvegarder")
+        else:
+            print(f"le model {model_name} à bien été sauvegarder")
 
-    def save_model(self, path: str):
         # with the format : ‘model_{}_{}’.format(date)
-        pass
 
-    def print_accuracy(self):
-        pass
+    def printAccuracy(self):
+        predict = self.predictTest(self.data.X_train)
+        print(accuracy_score(predict, self.data.y_test)*100)
 
-    def load_model(self):
+    def loadModel(self):
+        model_default = make_pipeline(
+            StandardScaler(), SGDClassifier(max_iter=1000, tol=1e-3))
+        if self.save == False:
+            print("save = False, on charge donc le Model par defaut")
+            return model_default
         try:
             # load model
-            pass
-        except:
-            pass
+            return load(self.model_path)
+
+        except FileNotFoundError:
+            print(
+                f"Erreur, Il n'existe aucun model du nom de {self.model_path}")
+            print("Chargement du default model")
+            return model_default
